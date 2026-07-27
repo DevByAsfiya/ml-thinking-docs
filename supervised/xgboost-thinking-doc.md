@@ -1008,8 +1008,6 @@ THE 7-QUESTION ALGORITHM INTERROGATION: XGBoost (eXtreme Gradient Boosting)
 
 Keep this completed interrogation. The next time you encounter a paper, blog post, or colleague mentioning this algorithm, you now have a one-page answer to every question a senior engineer will ask you about it.
 
-When you're ready to build the thinking doc for your next algorithm, run this skill again.
-
 ---
 
 ## Appendix: The case study in plain language
