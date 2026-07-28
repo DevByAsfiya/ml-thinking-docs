@@ -1056,4 +1056,25 @@ And the honest caveat the case study exists to make: **XGBoost's power is exactl
 
 ---
 
-*Session 2 of the Supervised ML Thinking Doc series. Companion to "Regression & Supervised Learning: The Evolutionary Thinking Framework."*
+## My Annotations — proof of reading
+ 
+> Personal reactions logged while reading, per the Week 1 deliverable. These are my own responses to the material, not part of the generated doc.
+ 
+### Moments that surprised me
+ 
+**1. Each step downhill is a whole tree, not a number.** In Session 1, gradient descent nudged w and b, and I assumed "gradient descent" always meant adjusting numbers. In XGBoost the step downhill *is an entire new tree* bolted onto the running total — the optimizer walks downhill in function space, not parameter space. That reframed what "a step" even means.
+ 
+**2. XGBoost uses curvature, not just slope.** Plain gradient boosting uses the slope of the loss. XGBoost uses the second derivative too (the Hessian), so it "feels" how sharply the ground is bending before it steps. I never registered that this is *why* it converges in fewer, smarter rounds than a vanilla GBM.
+ 
+**3. A 0.99 AUC is a bug report, not a trophy.** Because split-finding is greedy, XGBoost builds its whole model around a leaky column rather than just overvaluing it the way regression would. So an implausibly high score is the first thing to be suspicious of. That inverts the instinct every Kaggle notebook trained into me.
+ 
+### Moments where I thought "this is exactly like regression"
+ 
+**1. The Hypothesis → Loss → Optimization spine is untouched.** Different contents in every box, but the three boxes are identical to Session 1. Recognizing that instantly was the whole payoff of doing regression first.
+ 
+**2. lambda and alpha *are* Ridge and Lasso.** They didn't invent new regularization. L2 and L1 just moved off the linear coefficients and onto the leaf weights — literally the same idea in a different costume.
+ 
+### The moment that broke an assumption
+ 
+**"All ML optimization is gradient descent" is false.** Session 1 planted the idea that gradient descent is the universal engine. XGBoost's inner loop building each tree is greedy split-finding, which has no gradient at all. The outer loop is gradient descent, but on whole models, not numbers. So the thing I thought was universal has a hard qualifier: it's universal for *parametric models optimizing a continuous loss*, and a tree isn't that. That's the crack.
+ 
