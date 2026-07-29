@@ -3,7 +3,7 @@
 **Applying the 13 Frameworks and the Agent Moments to Extreme Gradient Boosting**
 
 **Domain anchor: E-Commerce**
-**Prerequisite: Session 1 — Regression & Supervised Learning: The Evolutionary Thinking Framework**
+**Prerequisite: Session 1 - Regression & Supervised Learning: The Evolutionary Thinking Framework**
 
 13 Thinking Frameworks | 4 AI Agent Moments | 3 Framing Scenarios | Completed 7-Question Interrogation
 
@@ -26,7 +26,7 @@
 
 ---
 
-## Part 1: The Human Story — learning from your own mistakes, on purpose
+## Part 1: The Human Story - learning from your own mistakes, on purpose
 
 Every good fraud analyst works the same way, and none of them gets it right on the first pass. They build a rough rule for what a scam return looks like, watch it fail on a specific cluster of cases, and then pay deliberate, focused attention to exactly the cases they got wrong. Their next version of judgment is built on top of the old one, aimed squarely at its blind spots. A buyer deciding whether a "item not received" claim is genuine does the same thing. This is not how a single model thinks. It is how a *sequence* of models thinks, each one built to repair the one before it. That instinct, "make your next guess fix the mistakes of your last guess," is the entire soul of boosting. XGBoost is just the most disciplined, industrial version of it ever built.
 
@@ -38,7 +38,7 @@ Around 2014, Tianqi Chen, a PhD student at the University of Washington, got tir
 
 ---
 
-## Part 2: The Intuition Build — the cheap rough cut, then a stack of patches
+## Part 2: The Intuition Build - the cheap rough cut, then a stack of patches
 
 You run a marketplace. Returns are eating your margin, and you suspect some "item arrived damaged" claims are fraudulent. Before any model exists, you sit down and write one dumb, obvious rule on a sticky note: *if the refund amount is high, flag it for review.* That's it. One split. It's crude, and it's right more often than chance, but it's nowhere near good enough on its own. It approves a pile of genuine claims and waves through some obvious scams. So far this is just a one-line decision stump, the weakest possible model.
 
@@ -48,27 +48,27 @@ You repeat. With both rules running, you look at what's *still* wrong. Now you n
 
 Two details turn that intuition into the real algorithm, and they're worth naming before the formal terms arrive. First, you don't trust any single patch fully. When you add a new sticky note, you only apply a *fraction* of its suggested adjustment, because the new note is a bit overconfident from staring at the misses too hard. That deliberate distrust, applying only a slice of each new model's correction, is the single most important defense XGBoost has against overfitting. Second, each "sticky note" isn't actually a single yes/no rule. It's a small decision tree, a few questions deep, so each patch can capture a little interaction rather than just one threshold. A patch can say "new account *and* mismatched address *and* mid-range refund," which is a combination no single column flags.
 
-Now the names. Each small tree is a **weak learner** or **base learner**. The leftover error each new tree is fitted to is the **residual** (more precisely, the **gradient** of the loss). The running total of all trees added so far is the **ensemble**, and the act of building them one after another, each correcting the last, is **boosting**. The fraction of each tree's correction you actually keep is the **learning rate**, also called **eta** or **shrinkage**. Put those together — gradient-driven residual fitting, shrunk corrections, shallow trees, regularization baked in — and you have **eXtreme Gradient Boosting**: XGBoost. You already understood the algorithm before you saw the word. You've been managing a returns desk in your head this whole time.
+Now the names. Each small tree is a **weak learner** or **base learner**. The leftover error each new tree is fitted to is the **residual** (more precisely, the **gradient** of the loss). The running total of all trees added so far is the **ensemble**, and the act of building them one after another, each correcting the last, is **boosting**. The fraction of each tree's correction you actually keep is the **learning rate**, also called **eta** or **shrinkage**. Put those together - gradient-driven residual fitting, shrunk corrections, shallow trees, regularization baked in - and you have **eXtreme Gradient Boosting**: XGBoost. You already understood the algorithm before you saw the word. You've been managing a returns desk in your head this whole time.
 
-Worth flagging the contrast with Session 1 right here, because it reframes everything that follows. Linear regression was **one** hypothesis, fit **once**, by adjusting **numbers**. XGBoost is **hundreds** of tiny hypotheses, fit **sequentially**, by adding **whole models**, where every new model's only purpose is to repair the running total. Same underlying machinery — Hypothesis → Loss → Optimization — completely different shape of answer.
+Worth flagging the contrast with Session 1 right here, because it reframes everything that follows. Linear regression was **one** hypothesis, fit **once**, by adjusting **numbers**. XGBoost is **hundreds** of tiny hypotheses, fit **sequentially**, by adding **whole models**, where every new model's only purpose is to repair the running total. Same underlying machinery - Hypothesis → Loss → Optimization - completely different shape of answer.
 
 ---
 
-## Part 3: The Hypothesis — what shape does XGBoost assume the world has?
+## Part 3: The Hypothesis - what shape does XGBoost assume the world has?
 
-### Part A — Plain language hypothesis
+### Part A - Plain language hypothesis
 
-Linear regression bet that the world is a straight line: turn one dial, the output moves a fixed amount, every time, everywhere. XGBoost makes almost the opposite bet. It assumes the world is a pile of *conditional, interacting rules*, and that the truth about any prediction is the **sum of many small adjustments**, each one triggered by a specific combination of conditions. It does not assume the relationship is smooth, or straight, or even continuous. It assumes that if you keep asking "okay, given everything we've decided so far, what's the leftover error, and which combination of features explains it?", you can keep carving the problem into finer and finer regions and nudge each region toward the right answer. The shape it assumes is a staircase built out of hundreds of thin steps, where any single step is dumb but the assembled staircase can approximate almost any surface — curves, kinks, plateaus, sudden cliffs, and feature interactions that linear regression cannot see at all.
+Linear regression bet that the world is a straight line: turn one dial, the output moves a fixed amount, every time, everywhere. XGBoost makes almost the opposite bet. It assumes the world is a pile of *conditional, interacting rules*, and that the truth about any prediction is the **sum of many small adjustments**, each one triggered by a specific combination of conditions. It does not assume the relationship is smooth, or straight, or even continuous. It assumes that if you keep asking "okay, given everything we've decided so far, what's the leftover error, and which combination of features explains it?", you can keep carving the problem into finer and finer regions and nudge each region toward the right answer. The shape it assumes is a staircase built out of hundreds of thin steps, where any single step is dumb but the assembled staircase can approximate almost any surface - curves, kinks, plateaus, sudden cliffs, and feature interactions that linear regression cannot see at all.
 
 The bet underneath that is subtle and it's the thing to hold onto: XGBoost bets that **complex truth is reachable by accumulating simple corrections**. Not one big clever model, but a long sequence of weak ones, each fitted to what the running total still gets wrong. It's betting that your e-commerce reality, where fraud risk depends on new-account *and* address-mismatch *and* refund-band all at once, is better captured by stacking conditional patches than by any single global formula.
 
-### Part B — The hypothesis table
+### Part B - The hypothesis table
 
 | What the hypothesis is | What it can capture | What it cannot capture | What you're betting on |
 |------------------------|---------------------|------------------------|------------------------|
 | Prediction = a baseline value + the sum of many shallow decision trees, each tree fitted to the residual error of all trees before it | Non-linear relationships, feature interactions, thresholds and cliffs, different behavior in different regions of the data, mixed messy tabular signals | Smooth extrapolation beyond the range it has seen, genuinely linear trends expressed compactly, relationships in raw unstructured data (pixels, raw text, audio) | That truth is reachable by summing many small conditional corrections, and that you have enough data to fit them without memorizing noise |
 
-### Part C — The regression comparison
+### Part C - The regression comparison
 
 Linear regression's hypothesis is **y = wx + b**: one global rule, the same slope applied to every customer, every order, everywhere in the data. Change the input by one unit and the output moves by exactly *w*, whether you're at the cheap end or the luxury end of the catalogue. That's its strength (stable, interpretable, extrapolates in a straight line) and its prison (it literally cannot represent "fraud risk rises with refund amount up to a point, then drops because the obvious scams get manually reviewed"). XGBoost's hypothesis carries no global slope at all. It says: the effect of a feature depends entirely on what region of the data you're in and what the other features are doing. There is no single number you can quote for "the effect of refund amount." There are only conditional adjustments that fire in combination.
 
@@ -76,21 +76,21 @@ So when do you choose which? Reach for linear regression when the relationship r
 
 ---
 
-## Part 4: The Loss Function — and the twist XGBoost adds to it
+## Part 4: The Loss Function - and the twist XGBoost adds to it
 
-### Part A — Plain language explanation
+### Part A - Plain language explanation
 
 In the regression session, the loss was MSE, and the story that justified it was a delivery-time disaster: the wrong loss doesn't crash your model, it silently optimizes for the wrong thing. The same trap exists here, but XGBoost adds a wrinkle, so hold two ideas at once. First idea: XGBoost still needs a loss that matches the *task*. If you're predicting a continuous number, say the expected rupee value of a customer's next 90 days, the loss is squared error, same as Session 1. If you're predicting a yes/no, say "will this return be fraudulent," the loss is **log loss** (cross-entropy), the same loss logistic regression used, which punishes confident wrong answers far more than hesitant ones. The task picks the base loss exactly as it did before.
 
-Here's where the painful e-commerce failure lives. Fraud is rare. Say 2% of returns are fraudulent. If you hand XGBoost a plain log loss with no adjustment, it discovers a beautiful cheat: predict "not fraud" on everything. It's right 98% of the time, the loss looks low, the dashboard looks green, and the model is completely useless because it never catches a single scam. The loss didn't lie about the math. It optimized exactly what you told it to — average error — in a world where "predict the majority always" is a great way to get low average error and zero business value. That's the silent failure, and it's the same shape as the delivery-time story, just wearing class imbalance instead of asymmetric cost.
+Here's where the painful e-commerce failure lives. Fraud is rare. Say 2% of returns are fraudulent. If you hand XGBoost a plain log loss with no adjustment, it discovers a beautiful cheat: predict "not fraud" on everything. It's right 98% of the time, the loss looks low, the dashboard looks green, and the model is completely useless because it never catches a single scam. The loss didn't lie about the math. It optimized exactly what you told it to - average error - in a world where "predict the majority always" is a great way to get low average error and zero business value. That's the silent failure, and it's the same shape as the delivery-time story, just wearing class imbalance instead of asymmetric cost.
 
-### Part B — Why this specific loss, and the second-order twist
+### Part B - Why this specific loss, and the second-order twist
 
-The regression doc explained that Legendre and Gauss chose squaring for three reasons: it kills sign cancellation, it punishes big errors disproportionately, and it produces clean, smooth calculus with a single minimum. XGBoost honors all of that, and then does something Session 1 didn't. Gradient descent in the regression session used only the **slope** of the loss — the first derivative, the gradient — to decide which way and roughly how far to step. XGBoost uses the slope *and* the **curvature** — the second derivative, the Hessian. Think of walking downhill blindfolded. With slope alone you know which way is down, so you take a cautious fixed step. With slope plus curvature you also feel how sharply the ground is bending, so on a gently sloping plateau you stride confidently and near a sharp valley floor you tiptoe. That extra information is why XGBoost converges in fewer, smarter rounds than plain gradient boosting, and it's why any loss you give XGBoost has to be twice-differentiable. The loss isn't just measuring badness, it's handing the optimizer both a direction and a sense of how risky each step is.
+The regression doc explained that Legendre and Gauss chose squaring for three reasons: it kills sign cancellation, it punishes big errors disproportionately, and it produces clean, smooth calculus with a single minimum. XGBoost honors all of that, and then does something Session 1 didn't. Gradient descent in the regression session used only the **slope** of the loss - the first derivative, the gradient - to decide which way and roughly how far to step. XGBoost uses the slope *and* the **curvature** - the second derivative, the Hessian. Think of walking downhill blindfolded. With slope alone you know which way is down, so you take a cautious fixed step. With slope plus curvature you also feel how sharply the ground is bending, so on a gently sloping plateau you stride confidently and near a sharp valley floor you tiptoe. That extra information is why XGBoost converges in fewer, smarter rounds than plain gradient boosting, and it's why any loss you give XGBoost has to be twice-differentiable. The loss isn't just measuring badness, it's handing the optimizer both a direction and a sense of how risky each step is.
 
 The other reason the loss matters more here than in regression: XGBoost lets you **build the business cost directly into it.** Because catching fraud is worth far more than the annoyance of reviewing a clean claim, you can weight the rare class so a missed fraud hurts the loss many times more than a false alarm. The loss stops being a neutral accuracy meter and becomes the place where you encode "a missed scam costs us ₹4,000, a wrongly-flagged genuine claim costs us 3 minutes of an agent's time." That's not a tuning detail. That's the whole game.
 
-### Part C — Thinking Framework #3 applied
+### Part C - Thinking Framework #3 applied
 
 ```
 THINKING FRAMEWORK #3 APPLIED TO XGBoost:
@@ -116,7 +116,7 @@ never "use the default objective." It's "here is our cost asymmetry, encode it
 into the objective, and show me the trade-off curve."
 ```
 
-### Part D — Reality Check
+### Part D - Reality Check
 
 ```
 REALITY CHECK
@@ -136,11 +136,11 @@ healthy while the model ignores the only cases you built it to catch.
 
 ---
 
-## Part 5: The Optimization — the engine, and where it stops being gradient descent
+## Part 5: The Optimization - the engine, and where it stops being gradient descent
 
 In Session 1 you learned one optimization story: gradient descent. Start with random w and b, compute the slope of the loss, take a small step downhill, repeat until you stop improving. The whole drama was about *one set of numbers* being nudged toward a minimum. Hold that picture, because XGBoost both keeps it and breaks it, and the place where it breaks is the most important conceptual moment in this entire document.
 
-Here's what's the **same**: there is still a loss surface, and XGBoost is still walking downhill on it. The word "gradient" in Gradient Boosting is not decoration. Every round, XGBoost computes the gradient of the loss with respect to the current predictions — that is, for every single training row, "which direction and how hard should this prediction move to reduce the loss?" That's pure Session 1 thinking. The optimizer is still chasing the bottom of a loss function using slope information.
+Here's what's the **same**: there is still a loss surface, and XGBoost is still walking downhill on it. The word "gradient" in Gradient Boosting is not decoration. Every round, XGBoost computes the gradient of the loss with respect to the current predictions - that is, for every single training row, "which direction and how hard should this prediction move to reduce the loss?" That's pure Session 1 thinking. The optimizer is still chasing the bottom of a loss function using slope information.
 
 Here's what's **fundamentally different**, and this is the callout:
 
@@ -174,7 +174,7 @@ is what changes. Stop assuming the thing being optimized is always a vector of
 numbers.
 ```
 
-So the optimization is a two-layer affair. The **outer loop** is functional gradient descent: compute residual gradients, fit a tree to them, shrink it by the learning rate (eta), add it, repeat for hundreds of rounds. The **inner loop** — building each individual tree — is greedy split-finding, exactly the decision-tree machinery, except XGBoost scores candidate splits using a special formula derived from the gradients and Hessians (the "gain"), and it refuses a split if the gain doesn't clear a complexity penalty (gamma). That penalty is regularization living *inside* the optimizer, which plain gradient boosting did not have. The optimizer doesn't just go downhill, it goes downhill *while being charged a fee for every bit of complexity it adds*.
+So the optimization is a two-layer affair. The **outer loop** is functional gradient descent: compute residual gradients, fit a tree to them, shrink it by the learning rate (eta), add it, repeat for hundreds of rounds. The **inner loop** - building each individual tree - is greedy split-finding, exactly the decision-tree machinery, except XGBoost scores candidate splits using a special formula derived from the gradients and Hessians (the "gain"), and it refuses a split if the gain doesn't clear a complexity penalty (gamma). That penalty is regularization living *inside* the optimizer, which plain gradient boosting did not have. The optimizer doesn't just go downhill, it goes downhill *while being charged a fee for every bit of complexity it adds*.
 
 ```
 THINKING FRAMEWORK #5 APPLIED TO XGBoost:
@@ -203,7 +203,7 @@ tree:
 
 Compared to linear regression's optimization: **Fundamentally different in object, similar in principle.** Same downhill walk on a loss; the thing being stepped is a growing forest, not two numbers, and the step size now has a whole family of cousins (rounds, subsampling, complexity fees) that didn't exist when you were just tuning alpha.
 
-**The failure modes specific to this optimizer** — the ones plain gradient descent never produced: the loss can keep dropping on training forever (you can always add another tree that fits more noise), so "training loss went down" is meaningless on its own; you *must* watch a held-out validation set. The model can stall if eta is too low and rounds too few, looking underfit when it just hasn't finished walking. And split-finding can lock onto a feature that happens to reduce gain spectacularly because it's *leaking* the answer — the optimizer is doing its job perfectly, charging downhill on a feature it should never have been given. Those are covered in Part 9.
+**The failure modes specific to this optimizer** - the ones plain gradient descent never produced: the loss can keep dropping on training forever (you can always add another tree that fits more noise), so "training loss went down" is meaningless on its own; you *must* watch a held-out validation set. The model can stall if eta is too low and rounds too few, looking underfit when it just hasn't finished walking. And split-finding can lock onto a feature that happens to reduce gain spectacularly because it's *leaking* the answer - the optimizer is doing its job perfectly, charging downhill on a feature it should never have been given. Those are covered in Part 9.
 
 ---
 
@@ -539,7 +539,7 @@ homoscedasticity as the things that quietly kill you.
 
 ---
 
-## Part 7: Agent Moments — where the agent executes and you decide
+## Part 7: Agent Moments - where the agent executes and you decide
 
 XGBoost has more critical human-judgment points than regression, because it has more knobs and more ways to look successful while being wrong. Here are the four that matter most in e-commerce. Each prompt is pasteable as-is.
 
@@ -698,7 +698,7 @@ Interrogating it, especially for leakage, is judgment the agent can't supply.
 
 ---
 
-## Part 8: Real-World Framing Examples — three e-commerce scenarios
+## Part 8: Real-World Framing Examples - three e-commerce scenarios
 
 ```
 Scenario 1: Return-risk scoring before dispatch
@@ -830,9 +830,9 @@ framing was wrong regardless of how good the metric looks.
 
 ---
 
-## Part 9: When It Breaks — the failure modes specific to XGBoost
+## Part 9: When It Breaks - the failure modes specific to XGBoost
 
-Regression's failure modes were mostly loud — a curved residual plot, a funnel shape, a wild coefficient. You could see them. XGBoost's failures are quiet, and the reason is structural: it is powerful enough to keep producing a good-looking number long after it has stopped learning anything true. Below are the failures that come from XGBoost's specific architecture, not from generic ML advice.
+Regression's failure modes were mostly loud - a curved residual plot, a funnel shape, a wild coefficient. You could see them. XGBoost's failures are quiet, and the reason is structural: it is powerful enough to keep producing a good-looking number long after it has stopped learning anything true. Below are the failures that come from XGBoost's specific architecture, not from generic ML advice.
 
 **Failure 1: The leakage lock-on.** This is the flagship XGBoost failure. Because split-finding is greedy and ruthless, a single leaky column with near-perfect information will get chosen at the root of tree after tree. The model doesn't spread its weight around and quietly overvalue the leak the way linear regression would; it builds itself almost entirely around it. Your AUC hits 0.99, feature importance shows one column at 60% gain, and everyone celebrates. In production that column is null at prediction time and the model collapses to noise. The tell is the thing that looks like success: an implausibly high score on a hard problem. In e-commerce, 0.99 AUC on fraud detection is not a triumph, it's a bug report.
 
@@ -842,7 +842,7 @@ Regression's failure modes were mostly loud — a curved residual plot, a funnel
 
 **Failure 4: Overfitting through rounds, not depth.** Everyone knows to cap max_depth. Fewer people watch the round count. Because every additional tree can reduce training loss, a model trained for a fixed 2,000 rounds without early stopping will spend the last several hundred trees fitting pure noise. Training loss keeps falling, which reads as progress. Validation loss bottomed out at round 340 and has been slowly climbing ever since. If you're not plotting both curves, you will never see this. You'll just deploy a model that's inexplicably worse than the one you built last month.
 
-**Failure 5: Distribution drift, undetected.** XGBoost has no linearity assumption to violate, so teams conclude it has no assumptions and skip diagnostics entirely. Its real assumption is that production data looks like training data. E-commerce violates this constantly — seasonality, a new pricing strategy, a marketing push that changes the customer mix, a competitor's sale. The model doesn't degrade gracefully; the learned thresholds simply stop corresponding to reality. Nothing errors. The predictions just get quietly worse while the model file sits unchanged and everyone assumes it's fine because it was fine in September.
+**Failure 5: Distribution drift, undetected.** XGBoost has no linearity assumption to violate, so teams conclude it has no assumptions and skip diagnostics entirely. Its real assumption is that production data looks like training data. E-commerce violates this constantly - seasonality, a new pricing strategy, a marketing push that changes the customer mix, a competitor's sale. The model doesn't degrade gracefully; the learned thresholds simply stop corresponding to reality. Nothing errors. The predictions just get quietly worse while the model file sits unchanged and everyone assumes it's fine because it was fine in September.
 
 **A case study, condensed.** A marketplace built a return-risk model in March. Trained on 14 months of data, random 80/20 split, 0.94 AUC, deployed with pride. Two problems compounded. The random split meant the model had seen post-Diwali and pre-Diwali behavior mixed together, so its validation score was inflated by peeking across seasons. And a feature, `days_to_delivery_actual`, had crept into the feature set. It's populated after delivery, and it correlates strongly with returns (slow deliveries get returned more), but at *dispatch time*, the moment the model actually runs, it doesn't exist. In the notebook it was always populated because the data was historical. In production it was null on every row. The model didn't crash; XGBoost handles missing values natively, so it just routed every row down the default branch and returned near-identical scores for everything. The QC team spent six weeks inspecting what was effectively a random sample of 200 orders a night before anyone noticed the score distribution had collapsed to a spike. Nothing errored. The dashboard was green the entire time.
 
@@ -859,36 +859,36 @@ Regression's failure modes were mostly loud — a curved residual plot, a funnel
 
 ---
 
-## Part 10: The Comparison Anchor — regression vs XGBoost, side by side
+## Part 10: The Comparison Anchor - regression vs XGBoost, side by side
 
 This section doesn't exist in the Session 1 document. It exists here because you already own regression as a foundation, and the point of this whole exercise is transfer, not accumulation. When you meet your next algorithm, the skill you want is the ability to sort it instantly into "parts I already understand" and "parts that are genuinely new."
 
-### Part A — The comparison table
+### Part A - The comparison table
 
 | Dimension | Linear Regression | XGBoost | What the difference teaches |
 |-----------|------------------|---------|----------------------------|
-| **Hypothesis** | y = wx + b. One global line. One slope per feature, applied everywhere. | Baseline + the sum of hundreds of shallow trees, each fitted to the leftover error of all previous trees. | A hypothesis is a bet about *shape*. Regression bets on one global rule; XGBoost bets that truth is reachable by accumulating local corrections. Neither is "better" — they're bets on different worlds. |
+| **Hypothesis** | y = wx + b. One global line. One slope per feature, applied everywhere. | Baseline + the sum of hundreds of shallow trees, each fitted to the leftover error of all previous trees. | A hypothesis is a bet about *shape*. Regression bets on one global rule; XGBoost bets that truth is reachable by accumulating local corrections. Neither is "better" - they're bets on different worlds. |
 | **Loss function** | MSE (or MAE, Huber, quantile, asymmetric). | Any twice-differentiable objective: log loss, squared error, or a custom weighted one. Needs curvature, not just slope. | The loss is a business lever in both. But XGBoost's default actively *misbehaves* on rare-event data, so the loss stops being a tuning detail and becomes the first thing you override. |
-| **Optimization** | Normal equation (exact, closed-form) or gradient descent (nudge two numbers downhill). | Functional gradient descent: each step *adds a whole tree*. Inside each tree, greedy split-finding with a complexity fee. | "Gradient descent" is a principle, not a procedure. What changes across algorithms is the *object* being stepped — numbers, layers, or entire models. |
+| **Optimization** | Normal equation (exact, closed-form) or gradient descent (nudge two numbers downhill). | Functional gradient descent: each step *adds a whole tree*. Inside each tree, greedy split-finding with a complexity fee. | "Gradient descent" is a principle, not a procedure. What changes across algorithms is the *object* being stepped - numbers, layers, or entire models. |
 | **Output** | A continuous number, unbounded, extrapolates freely. | A score bounded by the range of leaf values it learned. Never ventures outside what it has seen. | Flexibility inside the observed range is bought at the price of blindness outside it. Every gain in ML has a matching surrender. |
-| **Key assumption** | Linearity, independence, homoscedasticity, normality of residuals, no multicollinearity. | Production data resembles training data. No leakage. Enough rows per leaf that splits reflect signal. | Fewer *statistical* assumptions doesn't mean fewer assumptions. It means the assumptions moved — from the shape of the residuals to the integrity of the data. |
-| **Regularization** | Ridge (L2, shrink all weights), Lasso (L1, zero out features), Elastic Net. | max_depth, eta, gamma (the split fee), lambda and alpha on leaf weights, subsample and colsample. | Ridge and Lasso didn't disappear — they relocated onto leaf weights. A forest simply has more dimensions along which it can get complicated. |
-| **When it breaks** | Non-linearity, outliers dragging the fit, multicollinearity making coefficients unstable. | Leakage lock-on, imbalance surrender, extrapolation clipping, round overfitting, silent drift. | Regression fails *loudly* — bent residual plots, absurd coefficients. XGBoost fails *quietly*, still producing plausible numbers. Quiet failure is more expensive. |
+| **Key assumption** | Linearity, independence, homoscedasticity, normality of residuals, no multicollinearity. | Production data resembles training data. No leakage. Enough rows per leaf that splits reflect signal. | Fewer *statistical* assumptions doesn't mean fewer assumptions. It means the assumptions moved - from the shape of the residuals to the integrity of the data. |
+| **Regularization** | Ridge (L2, shrink all weights), Lasso (L1, zero out features), Elastic Net. | max_depth, eta, gamma (the split fee), lambda and alpha on leaf weights, subsample and colsample. | Ridge and Lasso didn't disappear - they relocated onto leaf weights. A forest simply has more dimensions along which it can get complicated. |
+| **When it breaks** | Non-linearity, outliers dragging the fit, multicollinearity making coefficients unstable. | Leakage lock-on, imbalance surrender, extrapolation clipping, round overfitting, silent drift. | Regression fails *loudly* - bent residual plots, absurd coefficients. XGBoost fails *quietly*, still producing plausible numbers. Quiet failure is more expensive. |
 | **Agent moment** | Choosing the loss to encode business cost asymmetry. | Threshold selection, plus interrogating feature importance for leakage. | The agent's blind spot shifts with the algorithm, but its *shape* never does: it always sits where business context and data provenance meet. |
 
-### Part B — What is identical
+### Part B - What is identical
 
-Almost all of the thinking. That's the point, and it's worth sitting with for a moment because it's easy to miss under all the new vocabulary. Problem framing is unchanged (Framework 1) — deciding whether return-risk is a classification, a ranking, or a value problem happens before you type an algorithm name, and getting it wrong ruins both models equally. The Hypothesis → Loss → Optimization spine is unchanged (Framework 4) — you're still choosing a shape, still defining badness, still walking downhill. The loss is still a business decision, not a technical default (Framework 3). Leakage still kills silently (Framework 7). Splitting must still match production usage (Framework 8). Regularization is still about choosing *which kind* of simplicity you want (Framework 9). Business metrics still beat technical ones in every stakeholder conversation (Framework 10). Domain features still beat mechanical ones (Framework 11). The seven-stage pipeline is the same seven stages (Framework 13).
+Almost all of the thinking. That's the point, and it's worth sitting with for a moment because it's easy to miss under all the new vocabulary. Problem framing is unchanged (Framework 1) - deciding whether return-risk is a classification, a ranking, or a value problem happens before you type an algorithm name, and getting it wrong ruins both models equally. The Hypothesis → Loss → Optimization spine is unchanged (Framework 4) - you're still choosing a shape, still defining badness, still walking downhill. The loss is still a business decision, not a technical default (Framework 3). Leakage still kills silently (Framework 7). Splitting must still match production usage (Framework 8). Regularization is still about choosing *which kind* of simplicity you want (Framework 9). Business metrics still beat technical ones in every stakeholder conversation (Framework 10). Domain features still beat mechanical ones (Framework 11). The seven-stage pipeline is the same seven stages (Framework 13).
 
-Count that up: of the 13 frameworks, you marked *Identical* or *Similar* on ten. Only three — hypothesis shape (2), optimization object (5), and the assumption set (12) — were fundamentally different. That ratio is the real lesson of this document, and it's the thing to carry into your next algorithm. When you meet SVMs, or a neural net, or whatever replaces XGBoost in five years, you should expect roughly the same ratio: mostly familiar, with two or three genuinely new ideas. The engineers who struggle with each new algorithm are the ones who treat it as 100% new. The ones who move fast recognize the 75% they already own and spend their attention on the 25% that isn't.
+Count that up: of the 13 frameworks, you marked *Identical* or *Similar* on ten. Only three - hypothesis shape (2), optimization object (5), and the assumption set (12) - were fundamentally different. That ratio is the real lesson of this document, and it's the thing to carry into your next algorithm. When you meet SVMs, or a neural net, or whatever replaces XGBoost in five years, you should expect roughly the same ratio: mostly familiar, with two or three genuinely new ideas. The engineers who struggle with each new algorithm are the ones who treat it as 100% new. The ones who move fast recognize the 75% they already own and spend their attention on the 25% that isn't.
 
-### Part C — What is fundamentally different, and why it matters
+### Part C - What is fundamentally different, and why it matters
 
-The deepest difference isn't tree-versus-line, and it isn't the formulas. It's this: **linear regression produces a model you can read; XGBoost produces a model you can only interrogate.** With regression, the model *is* its explanation — five coefficients, five sentences, done. You can hand them to a finance lead or a regulator and defend each one. With XGBoost, there is no single sentence. There are 400 trees, and the effect of any feature depends entirely on where you're standing in the data. Asking "what does account age do to fraud risk?" has no scalar answer — it does different things in different regions. You can approximate an answer with SHAP, but that's a second model explaining the first one. The explanation became a separate artifact rather than the model itself.
+The deepest difference isn't tree-versus-line, and it isn't the formulas. It's this: **linear regression produces a model you can read; XGBoost produces a model you can only interrogate.** With regression, the model *is* its explanation - five coefficients, five sentences, done. You can hand them to a finance lead or a regulator and defend each one. With XGBoost, there is no single sentence. There are 400 trees, and the effect of any feature depends entirely on where you're standing in the data. Asking "what does account age do to fraud risk?" has no scalar answer - it does different things in different regions. You can approximate an answer with SHAP, but that's a second model explaining the first one. The explanation became a separate artifact rather than the model itself.
 
-That structural fact cascades into everything. It's why XGBoost fails quietly: with regression, an absurd coefficient is visible on inspection, but XGBoost has no coefficient to look absurd — it just keeps emitting plausible-looking numbers, which is exactly how a marketplace inspected random boxes for six weeks. It's why feature importance gets mistaken for causation: the chart *looks* like an explanation and fills the gap where a real one should be. And it's why the diagnostic burden moves from statistics to engineering — you're no longer checking whether residuals are normal, you're checking whether a column will actually exist at prediction time and whether last month's score distribution still looks like this month's.
+That structural fact cascades into everything. It's why XGBoost fails quietly: with regression, an absurd coefficient is visible on inspection, but XGBoost has no coefficient to look absurd - it just keeps emitting plausible-looking numbers, which is exactly how a marketplace inspected random boxes for six weeks. It's why feature importance gets mistaken for causation: the chart *looks* like an explanation and fills the gap where a real one should be. And it's why the diagnostic burden moves from statistics to engineering - you're no longer checking whether residuals are normal, you're checking whether a column will actually exist at prediction time and whether last month's score distribution still looks like this month's.
 
-This difference matters because in production, it means **you cannot delegate trust to the model's readability — you have to build the monitoring that replaces it.** A regression model tells you when it's broken. An XGBoost model does not, so you must construct the alarm yourself: score-distribution monitoring, per-time-slice performance, calibration drift, and a hard audit of every feature's availability at inference time. With regression, understanding the model was free. With XGBoost, it's a line item — and teams that don't budget for it discover the cost six weeks later.
+This difference matters because in production, it means **you cannot delegate trust to the model's readability - you have to build the monitoring that replaces it.** A regression model tells you when it's broken. An XGBoost model does not, so you must construct the alarm yourself: score-distribution monitoring, per-time-slice performance, calibration drift, and a hard audit of every feature's availability at inference time. With regression, understanding the model was free. With XGBoost, it's a line item - and teams that don't budget for it discover the cost six weeks later.
 
 ---
 
@@ -1016,27 +1016,27 @@ A companion to Part 9, for when you need to explain the failure to someone non-t
 
 ### What they were trying to do
 
-Know, **before shipping an order**, whether the customer would probably send it back — so the warehouse could inspect those orders more carefully.
+Know, **before shipping an order**, whether the customer would probably send it back - so the warehouse could inspect those orders more carefully.
 
 ### Mistake 1: they shuffled time
 
-They had 14 months of order history and randomly picked 80% to teach the model and 20% to test it. Sounds fair. It isn't — random shuffling mixes October orders into the "teaching" pile and September orders into the "testing" pile. The model got to see festive-season behaviour while being tested on pre-festive orders. That's like letting a student see next year's exam paper while practising. The 0.94 score was real arithmetic, but it measured a test the model had already peeked at.
+They had 14 months of order history and randomly picked 80% to teach the model and 20% to test it. Sounds fair. It isn't - random shuffling mixes October orders into the "teaching" pile and September orders into the "testing" pile. The model got to see festive-season behaviour while being tested on pre-festive orders. That's like letting a student see next year's exam paper while practising. The 0.94 score was real arithmetic, but it measured a test the model had already peeked at.
 
 ### Mistake 2: they used a fact from the future
 
-One column was `days_to_delivery_actual` — how many days delivery *actually took*. Genuinely useful: slow deliveries do get returned more. So the model leaned on it heavily.
+One column was `days_to_delivery_actual` - how many days delivery *actually took*. Genuinely useful: slow deliveries do get returned more. So the model leaned on it heavily.
 
 But the model runs **at dispatch**. The box hasn't left the warehouse. Delivery hasn't happened. That number doesn't exist yet. In the historical spreadsheet it was always filled in, because those orders had been delivered months ago. In live production it was blank on every single order.
 
 ### Why nobody noticed for six weeks
 
-The model didn't crash. XGBoost tolerates missing values by design — a blank column just sends that row down a pre-decided default path. Every order took the same path and came out with roughly the same score. The system kept producing a list of 200 orders a night. The list looked normal. It just wasn't ranked by anything meaningful anymore — effectively a random 200. No error, no alert, dashboard green.
+The model didn't crash. XGBoost tolerates missing values by design - a blank column just sends that row down a pre-decided default path. Every order took the same path and came out with roughly the same score. The system kept producing a list of 200 orders a night. The list looked normal. It just wasn't ranked by anything meaningful anymore - effectively a random 200. No error, no alert, dashboard green.
 
-**The one-line lesson:** for every column you feed a model, ask *"would I actually have this value at the moment I need to make the prediction?"* If the answer is no, it's poison — and the more predictive it looks, the more damage it does.
+**The one-line lesson:** for every column you feed a model, ask *"would I actually have this value at the moment I need to make the prediction?"* If the answer is no, it's poison - and the more predictive it looks, the more damage it does.
 
 ### The same problem under linear regression
 
-Linear regression has to commit to **one number per feature, applied to everyone**: "apparel adds 8 percentage points of return risk." That number is wrong for both groups — too low for the nervous first-time buyer guessing at a size, too high for the loyal customer reordering the exact jeans they already own. To make it work, *you* would have to know the interaction in advance and hand-build a column like `first_time_buyer x unusual_size x apparel`. You'd have to guess the pattern before the model could use it. XGBoost discovers it from the data.
+Linear regression has to commit to **one number per feature, applied to everyone**: "apparel adds 8 percentage points of return risk." That number is wrong for both groups - too low for the nervous first-time buyer guessing at a size, too high for the loyal customer reordering the exact jeans they already own. To make it work, *you* would have to know the interaction in advance and hand-build a column like `first_time_buyer x unusual_size x apparel`. You'd have to guess the pattern before the model could use it. XGBoost discovers it from the data.
 
 | | Linear regression | XGBoost |
 |---|---|---|
@@ -1046,7 +1046,7 @@ Linear regression has to commit to **one number per feature, applied to everyone
 | **Explaining it** | One sentence per feature, easy for compliance or finance | Needs tools like SHAP; no single clean sentence |
 | **Data needed** | Works on a few hundred rows | Wants thousands to millions |
 | **New price tier launches** | Extends the trend outward (maybe badly, but it tries) | Silently caps at the highest range it has seen |
-| **How it fails** | Loudly and visibly — obviously bad predictions | Quietly — plausible-looking scores that are meaningless |
+| **How it fails** | Loudly and visibly - obviously bad predictions | Quietly - plausible-looking scores that are meaningless |
 
 **When you'd still pick linear regression:** little data, a genuinely steady trend, or someone needs to defend each factor in one sentence to a regulator.
 
@@ -1062,7 +1062,7 @@ And the honest caveat the case study exists to make: **XGBoost's power is exactl
  
 ### Moments that surprised me
  
-**1. Each step downhill is a whole tree, not a number.** In Session 1, gradient descent nudged w and b, and I assumed "gradient descent" always meant adjusting numbers. In XGBoost the step downhill *is an entire new tree* bolted onto the running total — the optimizer walks downhill in function space, not parameter space. That reframed what "a step" even means.
+**1. Each step downhill is a whole tree, not a number.** In Session 1, gradient descent nudged w and b, and I assumed "gradient descent" always meant adjusting numbers. In XGBoost the step downhill *is an entire new tree* bolted onto the running total - the optimizer walks downhill in function space, not parameter space. That reframed what "a step" even means.
  
 **2. XGBoost uses curvature, not just slope.** Plain gradient boosting uses the slope of the loss. XGBoost uses the second derivative too (the Hessian), so it "feels" how sharply the ground is bending before it steps. I never registered that this is *why* it converges in fewer, smarter rounds than a vanilla GBM.
  
@@ -1072,7 +1072,7 @@ And the honest caveat the case study exists to make: **XGBoost's power is exactl
  
 **1. The Hypothesis → Loss → Optimization spine is untouched.** Different contents in every box, but the three boxes are identical to Session 1. Recognizing that instantly was the whole payoff of doing regression first.
  
-**2. lambda and alpha *are* Ridge and Lasso.** They didn't invent new regularization. L2 and L1 just moved off the linear coefficients and onto the leaf weights — literally the same idea in a different costume.
+**2. lambda and alpha *are* Ridge and Lasso.** They didn't invent new regularization. L2 and L1 just moved off the linear coefficients and onto the leaf weights - literally the same idea in a different costume.
  
 ### The moment that broke an assumption
  
