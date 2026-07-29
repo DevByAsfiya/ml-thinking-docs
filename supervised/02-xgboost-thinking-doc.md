@@ -1056,7 +1056,7 @@ And the honest caveat the case study exists to make: **XGBoost's power is exactl
 
 ---
 
-## My Annotations — proof of reading
+## My Annotations
  
 > Personal reactions logged while reading, per the Week 1 deliverable. These are my own responses to the material, not part of the generated doc.
  
