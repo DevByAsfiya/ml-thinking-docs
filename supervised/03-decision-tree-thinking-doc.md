@@ -441,7 +441,7 @@ The decision tree is the deliberate setup for random forests and XGBoost. Almost
 
 ---
 
-## Annotations: Proof of Reading (Decision Tree)
+## Annotations: Decision Tree
 
 ### Moments that surprised me
 
